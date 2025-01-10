@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecatalog/bloc/add_product/add_product_bloc.dart';
 import 'package:flutter_ecatalog/bloc/products/product_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_ecatalog/bloc/update_product/update_product_bloc.dart';
 import 'package:flutter_ecatalog/data/datasource/local_datasource.dart';
 import 'package:flutter_ecatalog/data/models/request/product_request_model.dart';
 import 'package:flutter_ecatalog/presentation/login_page.dart';
@@ -68,74 +69,79 @@ class _HomePageState extends State<HomePage> {
                     child: ListTile(
                       title: Text('${state.data[index].title}'),
                       subtitle: Text('${state.data[index].price}'),
-                      trailing: ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: const Text('Add Product'),
-                                    content: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        TextField(
-                                          controller: titleController,
-                                          decoration: const InputDecoration(
-                                              labelText: "Title"),
+                      trailing: BlocConsumer<ProductBloc, ProductState>(
+                        listener: (context, state) {
+                          if (state is UpdateProductSuccess) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('update Product success')));
+
+                            context.read<ProductBloc>().add(GetProductsEvent());
+                            titleController!.clear();
+                            priceController!.clear();
+                            descriptionController!.clear();
+                            Navigator.pop(context);
+                          }
+                          if (state is AddProductError) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('error')));
+                          }
+                        },
+                        builder: (context, state) {
+                          if (state is UpdateProductLoading) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return ElevatedButton(
+                              onPressed: () {
+                                if (state is ProductSuccess) {
+                                  titleController!.text =
+                                      state.data[index].title!;
+                                  priceController!.text =
+                                      "${state.data[index].price!}";
+                                  descriptionController!.text =
+                                      state.data[index].description!;
+                                }
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        title: const Text('Update Product'),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            TextField(
+                                              controller: titleController,
+                                              decoration: const InputDecoration(
+                                                  labelText: "Title"),
+                                            ),
+                                            TextField(
+                                              controller: priceController,
+                                              decoration: const InputDecoration(
+                                                  labelText: "Price"),
+                                            ),
+                                            TextField(
+                                              controller: descriptionController,
+                                              decoration: const InputDecoration(
+                                                  labelText: "Description"),
+                                              maxLines: 3,
+                                            )
+                                          ],
                                         ),
-                                        TextField(
-                                          controller: priceController,
-                                          decoration: const InputDecoration(
-                                              labelText: "Price"),
-                                        ),
-                                        TextField(
-                                          controller: descriptionController,
-                                          decoration: const InputDecoration(
-                                              labelText: "Description"),
-                                          maxLines: 3,
-                                        )
-                                      ],
-                                    ),
-                                    actions: [
-                                      ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                          },
-                                          child: const Text('Cancel')),
-                                      const SizedBox(
-                                        width: 8,
-                                      ),
-                                      BlocConsumer<AddProductBloc,
-                                          AddProductState>(
-                                        listener: (context, state) {
-                                          if (state is AddProductSuccess) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                                    content: Text(
-                                                        'Add Product success')));
-                                            context
-                                                .read<ProductBloc>()
-                                                .add(GetProductsEvent());
-                                            titleController!.clear();
-                                            priceController!.clear();
-                                            descriptionController!.clear();
-                                            Navigator.pop(context);
-                                          }
-                                          if (state is AddProductError) {
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(const SnackBar(
-                                                    content: Text('error')));
-                                          }
-                                        },
-                                        builder: (context, state) {
-                                          if (state is AddProductLoading) {
-                                            return const Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            );
-                                          }
-                                          return ElevatedButton(
+                                        actions: [
+                                          ElevatedButton(
                                               onPressed: () {
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel')),
+                                          const SizedBox(
+                                            width: 2,
+                                          ),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                print(state);
+                                                print("INI APA========");
                                                 final model = ProductRequestModel(
                                                     title:
                                                         titleController!.text,
@@ -145,19 +151,37 @@ class _HomePageState extends State<HomePage> {
                                                         descriptionController!
                                                             .text);
 
+                                                if (state is ProductSuccess) {
+                                                  print(state);
+                                                  print("INI APA======== 2222");
+                                                  context
+                                                      .read<UpdateProductBloc>()
+                                                      .add(DoUpdateProductEvent(
+                                                          model: model,
+                                                          id: state.data[index]
+                                                              .id!));
+                                                }
+
+                                                ScaffoldMessenger.of(context)
+                                                    .showSnackBar(const SnackBar(
+                                                        content: Text(
+                                                            'update Product success')));
                                                 context
-                                                    .read<AddProductBloc>()
-                                                    .add(DoAddProductEvent(
-                                                        model: model));
+                                                    .read<ProductBloc>()
+                                                    .add(GetProductsEvent());
+                                                titleController!.clear();
+                                                priceController!.clear();
+                                                descriptionController!.clear();
+                                                Navigator.pop(context);
                                               },
-                                              child: const Text('Update'));
-                                        },
-                                      )
-                                    ],
-                                  );
-                                });
-                          },
-                          child: Text('Update')),
+                                              child: const Text('Update'))
+                                        ],
+                                      );
+                                    });
+                              },
+                              child: Text('Update edit'));
+                        },
+                      ),
                     ),
                   );
                 },
@@ -172,6 +196,9 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          titleController!.text = '';
+          priceController!.text = '';
+          descriptionController!.text = '';
           showDialog(
               context: context,
               builder: (context) {

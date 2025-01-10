@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_ecatalog/bloc/add_product/add_product_bloc.dart';
 import 'package:flutter_ecatalog/bloc/login/login_bloc.dart';
 import 'package:flutter_ecatalog/bloc/products/product_bloc.dart';
+import 'package:flutter_ecatalog/bloc/update_product/update_product_bloc.dart';
 import 'package:flutter_ecatalog/data/datasource/product_datasource.dart';
 import 'package:flutter_ecatalog/presentation/login_page.dart';
 import 'bloc/register/register_bloc.dart';
@@ -32,6 +33,9 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => AddProductBloc(ProductDataSource()),
+        ),
+        BlocProvider(
+          create: (context) => UpdateProductBloc(ProductDataSource()),
         ),
       ],
       child: MaterialApp(

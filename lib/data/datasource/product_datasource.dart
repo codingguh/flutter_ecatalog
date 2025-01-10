@@ -48,6 +48,20 @@ class ProductDataSource {
     }
   }
 
+  Future<Either<String, ProductResponseModel>> updateProduct(
+      ProductRequestModel model, int id) async {
+    final response = await http.put(
+        Uri.parse('https://api.escuelajs.co/api/v1/products/$id'),
+        body: model.toJson(),
+        headers: {'Content-Type': 'application/json'});
+
+    if (response.statusCode == 201) {
+      return Right(ProductResponseModel.fromJson(response.body));
+    } else {
+      return const Left('error add product');
+    }
+  }
+
 //   var request = http.MultipartRequest('POST', Uri.parse('https://api.escuelajs.co/api/v1/files/upload'));
 // request.files.add(await http.MultipartFile.fromPath('file', '/Users/bahri/Desktop/Screenshot 2023-06-15 at 16.13.40.png'));
 
