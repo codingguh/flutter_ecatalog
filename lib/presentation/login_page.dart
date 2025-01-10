@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_ecatalog/data/datasource/local_datasource.dart';
 import 'package:flutter_ecatalog/presentation/home.dart';
+import 'package:flutter_ecatalog/presentation/register_page.dart';
 
 import '../bloc/login/login_bloc.dart';
 import '../data/models/request/login_request_model.dart';
@@ -18,9 +20,20 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    super.initState();
     emailController = TextEditingController();
     passwordController = TextEditingController();
+    checkAuth();
+    super.initState();
+  }
+
+  void checkAuth() async {
+    await Future.delayed(Duration(seconds: 1));
+    final auth = await LocalDataSource().getToken();
+    if (auth.isNotEmpty) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) {
+        return const HomePage();
+      }));
+    }
   }
 
   @override
@@ -71,8 +84,9 @@ class _LoginPageState extends State<LoginPage> {
                   ));
                 }
                 if (state is LoginSuccess) {
+                  LocalDataSource().saveToken(state.model.accessToken);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('Login success '),
+                    content: const Text('Login success '),
                     backgroundColor: Colors.green,
                   ));
                   Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -101,6 +115,16 @@ class _LoginPageState extends State<LoginPage> {
                 },
               ),
             ),
+            const SizedBox(
+              height: 16,
+            ),
+            InkWell(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) {
+                    return const RegisterPage();
+                  }));
+                },
+                child: Text('Belum punya akun? register'))
           ],
         ),
       ),
