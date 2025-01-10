@@ -58,7 +58,7 @@ class ProductDataSource {
     if (response.statusCode == 201) {
       return Right(ProductResponseModel.fromJson(response.body));
     } else {
-      return const Left('error add product');
+      return const Left('error edit product');
     }
   }
 

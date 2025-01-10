@@ -69,12 +69,13 @@ class _HomePageState extends State<HomePage> {
                     child: ListTile(
                       title: Text('${state.data[index].title}'),
                       subtitle: Text('${state.data[index].price}'),
-                      trailing: BlocConsumer<ProductBloc, ProductState>(
+                      trailing:
+                          BlocListener<UpdateProductBloc, UpdateProductState>(
                         listener: (context, state) {
                           if (state is UpdateProductSuccess) {
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                    content: Text('update Product success')));
+                                    content: Text('Update Product success')));
 
                             context.read<ProductBloc>().add(GetProductsEvent());
                             titleController!.clear();
@@ -84,16 +85,17 @@ class _HomePageState extends State<HomePage> {
                           }
                           if (state is AddProductError) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('error')));
+                                const SnackBar(content: Text('Error')));
                           }
                         },
-                        builder: (context, state) {
-                          if (state is UpdateProductLoading) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                          return ElevatedButton(
+                        child: BlocBuilder<ProductBloc, ProductState>(
+                          builder: (context, state) {
+                            if (state is UpdateProductLoading) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                            return ElevatedButton(
                               onPressed: () {
                                 if (state is ProductSuccess) {
                                   titleController!.text =
@@ -104,83 +106,83 @@ class _HomePageState extends State<HomePage> {
                                       state.data[index].description!;
                                 }
                                 showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        title: const Text('Update Product'),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            TextField(
-                                              controller: titleController,
-                                              decoration: const InputDecoration(
-                                                  labelText: "Title"),
-                                            ),
-                                            TextField(
-                                              controller: priceController,
-                                              decoration: const InputDecoration(
-                                                  labelText: "Price"),
-                                            ),
-                                            TextField(
-                                              controller: descriptionController,
-                                              decoration: const InputDecoration(
-                                                  labelText: "Description"),
-                                              maxLines: 3,
-                                            )
-                                          ],
-                                        ),
-                                        actions: [
-                                          ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel')),
-                                          const SizedBox(
-                                            width: 2,
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text('Update Product'),
+                                      content: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          TextField(
+                                            controller: titleController,
+                                            decoration: const InputDecoration(
+                                                labelText: "Title"),
                                           ),
-                                          ElevatedButton(
-                                              onPressed: () {
-                                                print(state);
-                                                print("INI APA========");
-                                                final model = ProductRequestModel(
-                                                    title:
-                                                        titleController!.text,
-                                                    price: int.parse(
-                                                        priceController!.text),
-                                                    description:
-                                                        descriptionController!
-                                                            .text);
-
-                                                if (state is ProductSuccess) {
-                                                  print(state);
-                                                  print("INI APA======== 2222");
-                                                  context
-                                                      .read<UpdateProductBloc>()
-                                                      .add(DoUpdateProductEvent(
-                                                          model: model,
-                                                          id: state.data[index]
-                                                              .id!));
-                                                }
-
-                                                ScaffoldMessenger.of(context)
-                                                    .showSnackBar(const SnackBar(
-                                                        content: Text(
-                                                            'update Product success')));
-                                                context
-                                                    .read<ProductBloc>()
-                                                    .add(GetProductsEvent());
-                                                titleController!.clear();
-                                                priceController!.clear();
-                                                descriptionController!.clear();
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Update'))
+                                          TextField(
+                                            controller: priceController,
+                                            decoration: const InputDecoration(
+                                                labelText: "Price"),
+                                          ),
+                                          TextField(
+                                            controller: descriptionController,
+                                            decoration: const InputDecoration(
+                                                labelText: "Description"),
+                                            maxLines: 3,
+                                          ),
                                         ],
-                                      );
-                                    });
+                                      ),
+                                      actions: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Cancel'),
+                                        ),
+                                        const SizedBox(width: 2),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            final model = ProductRequestModel(
+                                              title: titleController!.text,
+                                              price: int.parse(
+                                                  priceController!.text),
+                                              description:
+                                                  descriptionController!.text,
+                                            );
+
+                                            if (state is ProductSuccess) {
+                                              context
+                                                  .read<UpdateProductBloc>()
+                                                  .add(
+                                                    DoUpdateProductEvent(
+                                                      model: model,
+                                                      id: state.data[index].id!,
+                                                    ),
+                                                  );
+                                            }
+
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(const SnackBar(
+                                                    content: Text(
+                                                        'Update Product success')));
+                                            context
+                                                .read<ProductBloc>()
+                                                .add(GetProductsEvent());
+                                            titleController!.clear();
+                                            priceController!.clear();
+                                            descriptionController!.clear();
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Update'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
                               },
-                              child: Text('Update edit'));
-                        },
+                              child: const Text('Update edit'),
+                            );
+                          },
+                        ),
                       ),
                     ),
                   );
